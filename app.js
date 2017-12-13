@@ -157,17 +157,48 @@ app.post(
 );
 
 // 4
-app.post("/register", (req, res, next) => {
+const ponzPointz = (ponzDist) => {
+  let pointz = 40;
+  for (let i = 1; i < ponzDist; i++) {
+    pointz = parseInt(pointz / 2);
+  }
+  return pointz;
+}
+
+
+
+const rewardUsers = async(parentId) => {
+  let distance = 1;
+  let parent = await User.findById(parentId)
+  while (parent) {
+    parent.points += ponzPointz(distance);
+    distance++;
+    await parent.save();
+    parent = await User.findById(parent.parent);
+  }
+}
+
+
+
+app.post("/register", async function(req, res, next) {
   const { username, password } = req.body;
-  const user = new User({ username, password });
-  user.save((err, user) => {
+  const parentId = req.body.parentId;
+  const user = new User({ username, password, parent: parentId, points: 0 });
+  try {
+    let savedUser = await user.save();
+    let parent = await User.findById(savedUser.parent);
+    parent.child.push(savedUser.id);
+    await parent.save();
+    await rewardUsers(savedUser.parent);
     req.login(user, function(err) {
       if (err) {
         return next(err);
       }
       return res.redirect("/");
     });
-  });
+  } catch (e) {
+    console.log(e);
+  }
 });
 
 // 5
