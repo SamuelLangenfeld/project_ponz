@@ -160,10 +160,7 @@ app.post(
 // 4
 const ponzPointz = (ponzDist) => {
   let pointz = 40;
-  for (let i = 1; i < ponzDist; i++) {
-    pointz = parseInt(pointz / 2);
-  }
-  return pointz;
+  return (((Math.trunc(pointz * (0.5 ** ponzDist)))) || 1);
 }
 
 
@@ -173,6 +170,17 @@ const rewardUsers = async(parentId) => {
   let parent = await User.findById(parentId)
   while (parent) {
     parent.points += ponzPointz(distance);
+    distance++;
+    await parent.save();
+    parent = await User.findById(parent.parent);
+  }
+}
+
+const punishUsers = async(parentId) => {
+  let distance = 1;
+  let parent = await User.findById(parentId)
+  while (parent) {
+    parent.points -= ponzPointz(distance);
     distance++;
     await parent.save();
     parent = await User.findById(parent.parent);
