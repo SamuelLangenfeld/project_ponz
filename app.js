@@ -91,8 +91,6 @@ const passport = require("passport");
 app.use(passport.initialize());
 app.use(passport.session());
 
-
-
 const User = require("./models/user");
 const mongoose = require("mongoose");
 mongoose.connect("mongodb://localhost/ponz");

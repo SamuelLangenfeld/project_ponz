@@ -1,31 +1,12 @@
-const repl = require('repl').start({});
-const lodash = require('lodash');
-const helpers = require('./helpers');
+let mongoose = require('mongoose');
+let repl = require('repl').start({});
+let models = require('./models');
 
+require('./mongo')().then(() => {
+  repl.context.models = models;
+  Object.keys(models).forEach(modelName => {
+    repl.context[modelName] = mongoose.model(modelName);
+  });
 
-
-
-// ----------------------------------------
-// Libs
-// ----------------------------------------
-repl.context.lodash = lodash;
-
-
-
-// ----------------------------------------
-// Helpers
-// ----------------------------------------
-repl.context.helpers = helpers;
-Object.keys(helpers).forEach(key => {
-  repl.context[key] = helpers[key];
+  repl.context.lg = data => console.log(data);
 });
-
-
-// ----------------------------------------
-// Logging
-// ----------------------------------------
-repl.context.lg = console.log;
-
-
-
-
