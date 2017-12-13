@@ -1,0 +1,25 @@
+#referral_link {
+  border: 1px solid blue;
+  border-radius:5px;
+  padding:5px;
+}
+
+#ponz_pointz {
+  border-radius:5px;
+  padding:5px;
+  text-align:left;
+  background-color:green;
+  color:white;
+}
+
+#ponz_pointz h2 {
+  margin: 5px;
+}
+
+#main {
+  margin: 5px;
+} 
+
+#main div {
+  margin-bottom: 10px;
+}

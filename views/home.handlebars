@@ -1,8 +1,14 @@
-<h2>Welcome {{user.username}}</h2>
 
-<h2>You have {{user.points}} Points</h2>
+<div id="main">
+  <div id="referral_link">
+    <h4>Your referral link is: <a href="http://localhost:3000/register/{{user.id}}">http://localhost:3000/register/{{user.id}}</a></h4>
+  </div>
 
-<h2>Your referrer is {{user.parent}}<h2>
+  <div id="ponz_pointz">
+    <h2>PonzPointz ${{user.points}}</h2>
+  </div>
 
-<h2>Your referral link is <a href="http://localhost:3000/register/{{user.id}}">http://localhost:3000/register/{{user.id}}</a></h2>
-
+  {{#if user.parent}}
+  <h2>Your referrer is {{parent.username}}<h2>
+  {{/if}}
+</div>

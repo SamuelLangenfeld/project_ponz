@@ -124,9 +124,12 @@ passport.deserializeUser(function(id, done) {
 // Routes
 // ----------------------------------------
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
   if (req.user) {
-    res.render("home", { user: req.user });
+    let parent = await User.findById(req.user.parent);
+    console.log("-------------- PARENT ---------------");
+    console.log(parent);
+    res.render("home", { user: req.user, parent: parent});
   } else {
     res.redirect("/login");
   }
@@ -144,7 +147,6 @@ app.get("/register/:id", (req, res) => {
 app.get("/register", (req, res) => {
   res.render("register");
 });
-
 
 // 3
 app.post(
@@ -178,8 +180,6 @@ const rewardUsers = async(parentId) => {
   }
 }
 
-
-
 app.post("/register", async function(req, res, next) {
   const { username, password } = req.body;
   const parentId = req.body.parentId;
@@ -187,7 +187,7 @@ app.post("/register", async function(req, res, next) {
   try {
     let savedUser = await user.save();
     let parent = await User.findById(savedUser.parent);
-    parent.child.push(savedUser.id);
+    parent.children.push(savedUser.id);
     await parent.save();
     await rewardUsers(savedUser.parent);
     req.login(user, function(err) {
