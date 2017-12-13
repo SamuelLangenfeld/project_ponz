@@ -124,12 +124,11 @@ passport.deserializeUser(function(id, done) {
 // Routes
 // ----------------------------------------
 
-app.get("/", async (req, res) => {
+app.get("/", async(req, res) => {
   if (req.user) {
     let parent = await User.findById(req.user.parent);
-    console.log("-------------- PARENT ---------------");
-    console.log(parent);
-    res.render("home", { user: req.user, parent: parent});
+
+    res.render("home", { user: req.user, parent: parent });
   } else {
     res.redirect("/login");
   }
