@@ -120,6 +120,22 @@ passport.deserializeUser(function(id, done) {
   });
 });
 
+// ---------------------------------------------------------
+// Redis 
+// 2017-12-13 13:46
+// ---------------------------------------------------------
+const redisClient = require('redis').createClient();
+let tree = {
+  id: null, 
+  children: []
+}
+redisClient.setnx('tree', JSON.stringify(tree));
+redisClient.get('rooms', (err, data) => {
+        if (err) return reject(err);
+        return resolve(JSON.parse(data, null, 4));
+});
+redisClient.set('rooms', JSON.stringify(rooms));
+
 // ----------------------------------------
 // Routes
 // ----------------------------------------
