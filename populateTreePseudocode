@@ -1,0 +1,40 @@
+//PSEUDOCODE
+
+
+Grab tree from redis
+
+My tree, atm
+
+{id:none(top level), children:[
+  {id:1stLevel, children:[{id:ChildLevel2, children: [{ChildLevel3}]}, {child2}, {child3}]},{id:1stlevelChild, },{},{}
+]}
+
+Given a user id, find the remaining tree down.
+
+Go into tree object, find target node. That should have its children and children children populated with ids already.
+
+{
+  id: targetUser, 
+  children:[{id:targetlvl+1, children:[{id:targetlvl+2}]}, {},{}]
+}
+
+Then make some kind of loop to grab ids.
+
+Need to have all of the ids, probably in an array.
+Make just one database call.
+
+User.find({$or:
+  [{id:child1Id},{id:child2Id},{id:child2.childId}]
+})
+
+Then need to have loop to assign attributes to json tree object. Can use a .find.
+
+let userArray = await Promise.all(database call);
+
+Probably use a version of the tree recursive function to go through each tree node, find base case no children, then 
+
+  userArray.find(el=>node.id==el.id), assign the elements attributes to the tree node. Only assign the attributes that the node is missing. Especially don't overwrite its children array.
+
+Pass the tree object to the view.
+
+The tree will object will now look just like it does in the redis database, only now it will have all of the attributes it's supposed to have, instead of just id and children ids.

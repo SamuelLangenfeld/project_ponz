@@ -124,15 +124,20 @@ passport.deserializeUser(function(id, done) {
 // Redis 
 // 2017-12-13 13:46
 // ---------------------------------------------------------
+
+
+//----------------------------------
+//Build Redis Tree Section
+//Only do if tree in redis does not exist
+//--------------------------------------
+
 let recurseTree = async(user) => {
   user.children = await Promise.all(user.children.map(async(child) => {
-    let fullChild = await User.findById(child);
+    let fullChild = await User.findById(child, { _id: 1, children: 1 });
     if (fullChild.children.length > 0) {
       await recurseTree(fullChild);
-      return fullChild
-    } else {
-      return fullChild
     }
+    return fullChild
 
   }))
 
@@ -140,14 +145,19 @@ let recurseTree = async(user) => {
 
 let buildTree = async() => {
   let tree = { id: null, children: [] };
-  tree.children = await User.find({ parent: null }); // returns array
+  tree.children = await User.find({ parent: null }, { _id: 1, children: 1 }); // returns array
   await recurseTree(tree);
   return tree
 }
 
 buildTree().then(tree => {
   console.log(JSON.stringify(tree, null, 2));
+  //-----------------
+  //Save tree to redis here
+  //-------------------
 });
+
+
 
 
 //const redisClient = require('redis').createClient();
