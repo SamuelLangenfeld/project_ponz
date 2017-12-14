@@ -129,14 +129,11 @@ let recurseTree = async(user) => {
     let fullChild = await User.findById(child);
     if (fullChild.children.length > 0) {
       await recurseTree(fullChild);
-      console.log("RETURNING A CHILD WITH CHILDREN");
-      console.log(fullChild.username);
       return fullChild
     } else {
       return fullChild
     }
 
-    return fullChild;
   }))
 
 }
