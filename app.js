@@ -124,35 +124,28 @@ passport.deserializeUser(function(id, done) {
 // Redis 
 // 2017-12-13 13:46
 // ---------------------------------------------------------
-let recurseTree = async (user) => {
-  // console.log(user);
-  if (user.children.length === 0) {
-    // do nothing
-  } else {
-    user.children = await user.children.map(async (child) => {
-      // console.log(" ------ Full child ------ ");
-      // console.log(child)
-      let fullChild = await User.findById(child);
-      // console.log(fullChild);
-      if (fullChild.children.length > 0) {
-        await recurseTree(fullChild);
-      } else {
-        return new Promise((reject, resolve) => {
-          console.log(fullChild);
-          resolve(fullChild);
-        });
-      }
-    })
-    // console.log(user);
-  }
+let recurseTree = async(user) => {
+  user.children = await Promise.all(user.children.map(async(child) => {
+    let fullChild = await User.findById(child);
+    if (fullChild.children.length > 0) {
+      await recurseTree(fullChild);
+      console.log("RETURNING A CHILD WITH CHILDREN");
+      console.log(fullChild.username);
+      return fullChild
+    } else {
+      return fullChild
+    }
+
+    return fullChild;
+  }))
+
 }
 
-let buildTree = async () => {
-  let tree = {id: null, children: []};
-  tree.children = await User.find({parent: null}); // returns array
-  // console.log(tree.children);
+let buildTree = async() => {
+  let tree = { id: null, children: [] };
+  tree.children = await User.find({ parent: null }); // returns array
   await recurseTree(tree);
-  return tree;
+  return tree
 }
 
 buildTree().then(tree => {
@@ -162,13 +155,13 @@ buildTree().then(tree => {
 
 //const redisClient = require('redis').createClient();
 //let tree = {
-  //id: null, 
-  //children: []
+//id: null, 
+//children: []
 //}
 //redisClient.setnx('tree', JSON.stringify(tree));
 //redisClient.get('rooms', (err, data) => {
-        //if (err) return reject(err);
-        //return resolve(JSON.parse(data, null, 4));
+//if (err) return reject(err);
+//return resolve(JSON.parse(data, null, 4));
 //});
 //redisClient.set('rooms', JSON.stringify(rooms));
 
