@@ -1,17 +1,51 @@
 
-<div id="main">
-  <div id="referral_link">
-    <h4>Your referral link is: <a href="http://localhost:3000/register/{{user.id}}">http://localhost:3000/register/{{user.id}}</a></h4>
+<div id="main" >
+
+  <div class="row">
+    <div id="referral_link">
+      <h4>Your referral link is: <a href="http://localhost:3000/register/{{user.id}}">http://localhost:3000/register/{{user.id}}</a></h4>
+    </div>
+
+    <div id="ponz_pointz">
+      <h2>PonzPointz ${{user.points}}</h2>
+    </div>
   </div>
 
-  <div id="ponz_pointz">
-    <h2>PonzPointz ${{user.points}}</h2>
+  <div class="row">
+    <div class="col-sm-6">
+      {{#if user.parent}}
+      <h2>Your referrer is {{parent.username}}<h2>
+      {{/if}}
+
+      <h2>Chain of Opportunity</h2>
+      {{>shared/_children}}
+    </div>
+    <div class="col-sm-6">
+      <h2>Pyramid of Greatness</h2>
+      <div class="breaker">
+      </div>
+      <div id="blocks">
+      {{#each pyramid as |pyramid|}}
+      <div style="width:150%;margin-left:-30px">
+        <div class="pyramid-block">{{pyramid}}</div>
+        <div class="pyramid-follower"></div>
+
+      {{/each}}
+      {{#each pyramid as |pyramid|}}
+      </div>
+      {{/each}}
+      </div>
+
+    </div>
   </div>
 
-  {{#if user.parent}}
-  <h2>Your referrer is {{parent.username}}<h2>
-  {{/if}}
-
-  <h2>Tree Part</h2>
-  {{>shared/_children}}
+  <div class="row">
+    <h2>Your Purchases</h2>
+    {{#each user.items as |item|}}
+    <div class="col-sm-3">
+      <img class="item-image" src="{{item.picture}}">
+      <h4>{{item.name}}</h4>
+    </div>
+    {{/each}}
+  <div>
 </div>

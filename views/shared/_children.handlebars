@@ -1,4 +1,13 @@
-    {{user.username}}
+    
     {{#each user.children as |user|}}
-        {{> shared/_children}}
-    {{/each}}    
+
+    <div>
+    &#8627<div class="chain-name">{{user.username}}</div>
+    <div class="children-container">
+
+    
+      {{>shared/_children user=user}}
+    </div>
+    </div>
+    {{/each}}
+    

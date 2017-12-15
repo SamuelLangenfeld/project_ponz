@@ -21,6 +21,7 @@
   "homepage": "https://github.com/SamuelLangenfeld/project_ponz#readme",
   "dependencies": {
     "bcrypt": "^1.0.3",
+    "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
     "cookie-session": "^2.0.0-beta.3",
     "dotenv": "^4.0.0",
@@ -38,6 +39,7 @@
     "morgan": "^1.9.0",
     "morgan-toolkit": "^1.0.2",
     "passport": "^0.4.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "redis": "^2.8.0"
   }
 }

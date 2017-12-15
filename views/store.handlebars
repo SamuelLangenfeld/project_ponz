@@ -1,0 +1,22 @@
+<div id="ponz_pointz">
+      <h2>PonzStore</h2>
+</div>
+
+  <div class="container">
+  <div class="row">
+  <h3>You Have {{user.points}} PonzPointz</h3>
+</div>
+      {{#each items as |item|}}
+      <div class="col-md-3">
+        <div class="item">
+          <a href="/store/buy/{{item._id}}">
+            <div>
+            <img src="{{item.picture}}" class="item-image">
+            </div>
+            <h4>{{item.name}}</h4>
+            <h4>{{item.points}} PonzPointz</h4>
+          </a>
+        </div>
+      </div>
+    {{/each}}
+  </div>

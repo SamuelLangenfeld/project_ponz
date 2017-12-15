@@ -1,15 +1,17 @@
 #referral_link {
   border: 1px solid blue;
-  border-radius:5px;
-  padding:5px;
+  border-radius: 5px;
+  padding: 5px;
+  text-align: center;
 }
 
 #ponz_pointz {
-  border-radius:5px;
-  padding:5px;
-  text-align:left;
-  background-color:green;
-  color:white;
+  border-radius: 5px;
+  padding: 5px;
+  text-align: left;
+  background-color: green;
+  color: white;
+  text-align: center;
 }
 
 #ponz_pointz h2 {
@@ -18,8 +20,65 @@
 
 #main {
   margin: 5px;
-} 
+}
 
 #main div {
   margin-bottom: 10px;
+}
+
+.chain-name {
+  font-size: 14px;
+  font-family: Arial;
+  color: black;
+  background-color: #2fe82c;
+  display: inline-block;
+  padding: 6px;
+  border-radius: 5px;
+}
+
+.children-container {
+  margin-left: 50px;
+}
+
+
+.pyramid-block {
+  height: 0px;
+  position: relative;
+  text-align: center;
+  margin: 0px;
+  border: 0px;
+  top: 0px;
+  color: white;
+  font-size: 16px;
+}
+
+.pyramid-follower {
+  z-index: -1;
+  position: relative;
+  color: black;
+  top: -20px;
+  border-bottom: 50px blue solid;
+  border-left: 38px solid transparent;
+  border-right: 38px solid transparent;
+  margin-bottom: 0px;
+}
+
+.breaker {
+  height: 50px;
+}
+
+#blocks div {
+  left: 150px;
+  text-align: center;
+  width: 10%;
+  margin-bottom: 5px;
+}
+
+.item-image {
+  max-width: 100%;
+  height: 250px;
+}
+
+.item {
+  margin-top: 20px;
 }

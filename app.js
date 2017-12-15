@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+var Promise = require("bluebird");
+const store = require('./routers/store');
 
 
 // ----------------------------------------
@@ -100,7 +102,6 @@ const LocalStrategy = require("passport-local").Strategy;
 passport.use(
   new LocalStrategy(function(username, password, done) {
     User.findOne({ username }, function(err, user) {
-      console.log(user);
       if (err) return done(err);
       if (!user || !user.validPassword(password)) {
         return done(null, false, { message: "Invalid username/password" });
@@ -125,62 +126,195 @@ passport.deserializeUser(function(id, done) {
 // 2017-12-13 13:46
 // ---------------------------------------------------------
 
-
+const redis = require('redis');
+Promise.promisifyAll(redis);
+const redisClient = redis.createClient();
 //----------------------------------
 //Build Redis Tree Section
 //Only do if tree in redis does not exist
 //--------------------------------------
 
-let recurseTree = async(user) => {
-  user.children = await Promise.all(user.children.map(async(child) => {
-    let fullChild = await User.findById(child, { _id: 1, children: 1 });
-    if (fullChild.children.length > 0) {
-      await recurseTree(fullChild);
+(async() => {
+  redisClient.exists("tree", (err, tree) => {
+    if (!tree) {
+      let recurseTree = async(user) => {
+        user.children = await Promise.all(user.children.map(async(child) => {
+          let fullChild = await User.findById(child, { _id: 1, children: 1 });
+          if (fullChild.children.length > 0) {
+            await recurseTree(fullChild);
+          }
+          return fullChild;
+
+        }))
+
+      }
+
+      let buildTree = async() => {
+        let tree = { id: null, children: [] };
+        tree.children = await User.find({ parent: null }, { _id: 1, children: 1 }); // returns array
+        await recurseTree(tree);
+        return tree
+      }
+
+      buildTree().then(tree => {
+        //console.log(JSON.stringify(tree, null, 2));
+        let stringTree = JSON.stringify(tree);
+        redisClient.set('tree', stringTree);
+      });
     }
-    return fullChild
 
-  }))
+  });
 
+})();
+
+//-----------------------------------------
+//Find node in a node tree function
+//-----------------------------------------
+
+async function findNode(userId, tree) {
+  if (tree._id == userId) {
+    return tree;
+  }
+  var result;
+  for (let child of tree.children) {
+    result = await findNode(userId, child);
+    if (result) {
+      return result;
+    }
+  }
 }
 
-let buildTree = async() => {
-  let tree = { id: null, children: [] };
-  tree.children = await User.find({ parent: null }, { _id: 1, children: 1 }); // returns array
-  await recurseTree(tree);
-  return tree
-}
-
-buildTree().then(tree => {
-  console.log(JSON.stringify(tree, null, 2));
-  //-----------------
-  //Save tree to redis here
-  //-------------------
-});
+//-----------------------------------------
+//Test find node function
+//-----------------------------------------
 
 
+/*
 
+(async () => {
+  let user =await User.findOne({ username: 'Sanford_Bergstrom' });
+  console.log(`Sanford ID ${user.id}`)
+  redisClient.get('tree', async (err, tree)=>{
+    tree = JSON.parse(tree);
+    let node =await findNode(user.id, tree);
+    console.log("FINAL");
+    console.log(node);
+    console.log(node.children);
+  });
+})();
 
-//const redisClient = require('redis').createClient();
-//let tree = {
-//id: null, 
-//children: []
-//}
-//redisClient.setnx('tree', JSON.stringify(tree));
-//redisClient.get('rooms', (err, data) => {
-//if (err) return reject(err);
-//return resolve(JSON.parse(data, null, 4));
-//});
-//redisClient.set('rooms', JSON.stringify(rooms));
+*/
+
+/*
+ASYNC REDIS EXAMPLE FOR FUTURE USE
+(async()=>{
+  console.log('here')
+  let tree=await redisClient.getAsync('tree')
+  console.log(tree);
+})()
+*/
 
 // ----------------------------------------
 // Routes
 // ----------------------------------------
 
+
 app.get("/", async(req, res) => {
   if (req.user) {
     let parent = await User.findById(req.user.parent);
+    let user = req.user;
 
-    res.render("home", { user: req.user, parent: parent });
+    //---------------------------------
+    //Grab correct node from Redis tree
+    //---------------------------------
+
+    let tree = await redisClient.getAsync('tree');
+    tree = JSON.parse(tree);
+    let userNode = await findNode(user.id, tree);
+
+
+    //--------------------------------
+    // Get all ids from the node tree
+    //--------------------------------
+
+    let userIds = [];
+
+    function grabIds(node) {
+      userIds.push({ _id: node._id });
+      node.children.forEach(child => {
+        grabIds(child);
+      })
+    };
+
+    let users = [];
+
+
+
+    grabIds(userNode);
+
+    //--------------------------------------------------
+    // Make a database call to gather every user needed
+    //--------------------------------------------------
+
+    users = await User.find({ $or: userIds });
+
+
+    //--------------------------------------------------
+    // Assign user attributes to each node
+    //--------------------------------------------------
+    function assignAttributes(node) {
+      targetUser = users.find(el => {
+        return (el._id == node._id)
+      })
+      node.username = targetUser.username;
+      node.points = targetUser.points;
+      node.parent = targetUser.parent;
+      node.id = targetUser.id;
+      node.items = targetUser.items
+
+      node.children.forEach(child => {
+        assignAttributes(child);
+      })
+
+    };
+
+
+    assignAttributes(userNode);
+
+    //----------------------------------------------
+    // Make the different levels for the CSS pyramid
+    //----------------------------------------------
+
+    let pyramid = []
+    let level = 0;
+
+    //Basic idea
+    //[1, 2, 4, 2, 5, etc]
+    /*
+    UserNode has nested objects.
+    Need to use recursion
+    */
+
+
+
+    function calcPyramid(node, pyramid) {
+      if (pyramid[level] === undefined) {
+        pyramid.push(0);
+      }
+      pyramid[level] = pyramid[level] + 1;
+      node.children.forEach(child => {
+        level += 1;
+        calcPyramid(child, pyramid);
+        level -= 1;
+      });
+    }
+
+
+    calcPyramid(userNode, pyramid);
+    console.log(pyramid)
+    console.log(userNode.items);
+
+    res.render("home", { user: userNode, parent: parent, pyramid });
   } else {
     res.redirect("/login");
   }
@@ -209,10 +343,13 @@ app.post(
   })
 );
 
+app.use('/store', store);
+
+
 // 4
 const ponzPointz = (ponzDist) => {
   let pointz = 40;
-  return (((Math.trunc(pointz * (0.5 ** ponzDist)))) || 1);
+  return (((Math.trunc(pointz * (0.5 ** (ponzDist - 1))))) || 1);
 }
 
 
@@ -249,6 +386,12 @@ app.post("/register", async function(req, res, next) {
     parent.children.push(savedUser.id);
     await parent.save();
     await rewardUsers(savedUser.parent);
+    let tree = await redisClient.getAsync('tree');
+    tree = JSON.parse(tree);
+    let parentNode = await findNode(parent.id, tree);
+    parentNode.children.push({ _id: savedUser._id, children: [] });
+    let stringTree = JSON.stringify(tree);
+    await redisClient.setAsync('tree', stringTree);
     req.login(user, function(err) {
       if (err) {
         return next(err);

@@ -8,7 +8,8 @@ const UserSchema = new Schema({
   passwordHash: { type: String, required: true },
   points: { type: Number },
   parent: { type: Schema.Types.ObjectId, ref: "User" },
-  children: [{ type: Schema.Types.ObjectId, ref: "User" }]
+  children: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  items: [{ picture: { type: String }, name: { type: String } }]
 });
 
 UserSchema.plugin(uniqueValidator);
